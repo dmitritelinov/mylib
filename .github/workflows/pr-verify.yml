@@ -66,9 +66,9 @@ jobs:
             mkdir -p profiles
             #cp ~/.conan2/profiles/default profiles/${{ matrix.profile }}
           fi
-          
+          cp -f profiles/${{ matrix.profile }} ~/.conan2/profiles/default
           # Show final profile
-          echo "Using profile:"
+          #echo "Using profile:"
           #conan profile show profiles/${{ matrix.profile }}
       
       - name: Configure Conan
