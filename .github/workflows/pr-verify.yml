@@ -69,7 +69,7 @@ jobs:
           cmake --build --preset conan-default
 
       - name: Build
-        if: runner.os == 'Windows'
+        if: runner.os != 'Windows'
         run:
           cmake --build --preset conan-release
         
