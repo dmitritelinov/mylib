@@ -53,21 +53,25 @@ jobs:
           conan lock create . --profile=profiles/${{ matrix.profile }} --lockfile-out=conan.lock
           conan install . -pr:a=profiles/${{ matrix.profile }} --build=missing --lockfile=conan.lock
       
-      - name: Configure CMake
-        run: |
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
-            cmake --preset conan-default -DBUILD_TESTING=ON
-          else
-            cmake --preset conan-release -DBUILD_TESTING=ON
-          fi
+      - name: Configure CMake Windows
+        if: runner.os == 'Windows'
+        run:
+          cmake --preset conan-default -DBUILD_TESTING=ON
       
+      - name: Configure CMake
+        if: runner.os != 'Windows'
+        run:
+          cmake --preset conan-release -DBUILD_TESTING=ON
+            
+      - name: Build Windows
+        if: runner.os == 'Windows'
+        run:
+          cmake --build --preset conan-default
+
       - name: Build
-        run: |
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
-            cmake --build --preset conan-default
-          else
-            cmake --build --preset conan-release
-          fi
+        if: runner.os == 'Windows'
+        run:
+          cmake --build --preset conan-release
         
       
       - name: Run Tests
