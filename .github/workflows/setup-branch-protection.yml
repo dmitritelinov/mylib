@@ -1,0 +1,103 @@
+name: Setup Branch Protection
+
+on:
+  workflow_dispatch:  # Allows manual triggering from GitHub UI or CLI
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/setup-branch-protection.yml'  # Only run if this file changes
+
+jobs:
+  setup-protection:
+    name: Configure Branch Protection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup branch protection rules
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PAT_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const branch = 'main';
+            
+            // Define required status checks
+            const requiredChecks = [
+              'Check Branch Status',
+              'Format Check',
+              'Build and Test (ubuntu-latest)',
+              'Build and Test (macos-latest)',
+              'Build and Test (windows-latest)',
+              'Verify Dependency Lockfile'
+            ];
+            
+            try {
+              await github.rest.repos.updateBranchProtection({
+                owner,
+                repo,
+                branch,
+                required_status_checks: {
+                  strict: true,  // Require branches to be up to date
+                  contexts: requiredChecks
+                },
+                enforce_admins: true,
+                required_pull_request_reviews: null,
+                restrictions: null,
+                required_linear_history: true,  // Enforce linear history
+                allow_force_pushes: false,
+                allow_deletions: false,
+                required_conversation_resolution: true
+              });
+              
+              console.log('✅ Branch protection configured successfully');
+              
+              // Create a summary
+              core.summary
+                .addHeading('Branch Protection Configuration')
+                .addRaw('Branch protection has been configured for `main` with the following settings:')
+                .addList([
+                  'Require branches to be up to date before merging',
+                  'Enforce linear history (no merge commits)',
+                  'Require all status checks to pass',
+                  'Require conversation resolution before merging',
+                  'Prevent force pushes and branch deletion'
+                ])
+                .addHeading('Required Status Checks', 3)
+                .addList(requiredChecks)
+                .write();
+              
+            } catch (error) {
+              core.setFailed(`Failed to setup branch protection: ${error.message}`);
+              
+              if (error.status === 404) {
+                core.error('Repository not found or insufficient permissions. Ensure PAT_TOKEN has repo scope.');
+              }
+            }
+      
+      - name: Configure repository settings
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PAT_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            
+            try {
+              // Enable various repository features
+              await github.rest.repos.update({
+                owner,
+                repo,
+                allow_squash_merge: true,
+                allow_merge_commit: false,  // Disable merge commits
+                allow_rebase_merge: true,
+                delete_branch_on_merge: true,
+                allow_auto_merge: false  // Require manual merge
+              });
+              
+              console.log('✅ Repository settings updated');
+            } catch (error) {
+              core.warning(`Could not update repository settings: ${error.message}`);
+            }
