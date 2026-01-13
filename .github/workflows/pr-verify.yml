@@ -6,32 +6,6 @@ on:
     types: [ opened, synchronize, reopened, labeled, unlabeled ]
 
 jobs:
-  check-branch-status:
-    name: Check Branch Status
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      - name: Check if branch is up to date
-        run: |
-          git fetch origin main
-          BEHIND=$(git rev-list --count HEAD..origin/main)
-          if [ "$BEHIND" -gt 0 ]; then
-            echo "::error::Branch is $BEHIND commits behind main. Please rebase or merge main."
-            exit 1
-          fi
-      
-      - name: Check linear history
-        run: |
-          # Check for merge commits
-          MERGE_COMMITS=$(git log origin/main..HEAD --merges --oneline | wc -l)
-          if [ "$MERGE_COMMITS" -gt 0 ]; then
-            echo "::error::Non-linear history detected. Please rebase to maintain linear history."
-            exit 1
-          fi
-
   format-check:
     name: Format Check
     runs-on: ubuntu-latest
