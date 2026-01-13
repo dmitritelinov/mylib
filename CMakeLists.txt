@@ -1,10 +1,15 @@
 cmake_minimum_required(VERSION 3.15)
 
-# Read version from conanfile.py
-file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/conanfile.py" VERSION_LINE REGEX "version = \"[0-9]+\\.[0-9]+\\.[0-9]+\"")
-string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" PROJECT_VERSION "${VERSION_LINE}")
+project(mylib VERSION 1.1.1 LANGUAGES CXX)
 
-project(mylib VERSION ${PROJECT_VERSION} LANGUAGES CXX)
+# Get full version from Conan env (if set)
+if(DEFINED ENV{CONAN_PACKAGE_VERSION})
+    set(MYLIB_VERSION_FULL "$ENV{CONAN_PACKAGE_VERSION}")
+else()
+    set(MYLIB_VERSION_FULL "${PROJECT_VERSION}")
+endif()
+
+message(STATUS "Building ${PROJECT_NAME} ${MYLIB_VERSION_FULL}")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

@@ -2,6 +2,7 @@ from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout, CMakeDeps
 from conan.tools.files import copy
 import os
+import subprocess
 
 
 class MylibConan(ConanFile):
@@ -61,3 +62,10 @@ class MylibConan(ConanFile):
         # For legacy generators
         self.cpp_info.names["cmake_find_package"] = "mylib"
         self.cpp_info.names["cmake_find_package_multi"] = "mylib"
+    def set_version(self):
+        try:
+            short_sha = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
+            short_sha = short_sha.decode().strip()
+            self.version = f"1.1.1-dev-{short_sha}"
+        except subprocess.CalledProcessError:
+            self.version = "1.1.1-dev-unknown"
