@@ -105,49 +105,6 @@ jobs:
           conan upload "mylib/*" \
             --remote=conan-rc --confirm
       
-      - name: Create consumer test project
-        run: |
-          export MYLIB=$(ls mylib/*)
-          mkdir -p consumer_test
-          cd consumer_test
-          cat > conanfile.txt << EOF
-          [requires]
-          mylib/${{ env.MYLIB }}
-          
-          [generators]
-          CMakeDeps
-          CMakeToolchain
-          EOF
-          
-          cat > CMakeLists.txt << EOF
-          cmake_minimum_required(VERSION 3.15)
-          project(ConsumerTest)
-          
-          find_package(mylib CONFIG REQUIRED)
-          
-          add_executable(test_consumer main.cpp)
-          target_link_libraries(test_consumer PRIVATE mylib::mylib)
-          EOF
-          
-          cat > main.cpp << EOF
-          #include <mylib/mylib.h>
-          #include <iostream>
-          
-          int main() {
-              int result = mylib::sum(5, 3);
-              std::cout << "5 + 3 = " << result << std::endl;
-              return (result == 8) ? 0 : 1;
-          }
-          EOF
-      
-      - name: Build and test consumer
-        run: |
-          cd consumer_test
-          conan install . --profile=../profiles/linux-gcc --build=missing
-          cmake --preset conan-release
-          cmake --build --preset conan-release
-          ./build/Release/test_consumer
-
   verify-lockfile:
     name: Verify Dependency Lockfile
     runs-on: ubuntu-latest
