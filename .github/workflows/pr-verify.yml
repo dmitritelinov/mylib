@@ -63,16 +63,9 @@ jobs:
         run:
           cmake --preset conan-release -DBUILD_TESTING=ON
             
-      - name: Build Windows
-        if: runner.os == 'Windows'
-        run:
-          cmake --build --preset conan-release
-
       - name: Build
-        if: runner.os != 'Windows'
         run:
-          cmake --build --preset conan-release
-        
+          cmake --build --preset conan-release     
       
       - name: Run Tests
         uses: dmitritelinov/shared-cicd-actions/run-tests@main
