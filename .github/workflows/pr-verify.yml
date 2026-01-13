@@ -55,10 +55,10 @@ jobs:
       
       - name: Configure CMake
         run: |
-          cmake --preset conan-release -DBUILD_TESTING=ON
+          cmake --preset conan-default -DBUILD_TESTING=ON
       
       - name: Build
-        run: cmake --build --preset conan-release
+        run: cmake --build --preset conan-default
       
       - name: Run Tests
         uses: dmitritelinov/shared-cicd-actions/run-tests@main
