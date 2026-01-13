@@ -136,42 +136,7 @@ jobs:
               repo: context.repo.repo,
               tag_name: 'v${{ needs.check-merge-and-label.outputs.version }}',
               name: 'Release v${{ needs.check-merge-and-label.outputs.version }}',
-              body: `## Release v${{ needs.check-merge-and-label.outputs.version }}
-              
-### Conan Packages
-
-This release is available via Conan:
-
-\`\`\`bash
-conan install --requires=mylib/${{ needs.check-merge-and-label.outputs.version }}
-\`\`\`
-
-### Platforms
-
-- Linux (GCC 11)
-- macOS (Apple Clang 14)
-- Windows (MSVC 193)
-
-### Changes
-
-${{ steps.changelog.outputs.changelog }}
-
-### Installation
-
-Add to your \`conanfile.txt\`:
-
-\`\`\`
-[requires]
-mylib/${{ needs.check-merge-and-label.outputs.version }}
-\`\`\`
-
-Or use CMake directly:
-
-\`\`\`cmake
-find_package(mylib CONFIG REQUIRED)
-target_link_libraries(your_target PRIVATE mylib::mylib)
-\`\`\`
-              `,
+              body: `## Release v${{ needs.check-merge-and-label.outputs.version }},
               draft: false,
               prerelease: false
             });
@@ -187,11 +152,5 @@ target_link_libraries(your_target PRIVATE mylib::mylib)
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🚀 Release Published
-              
-Version **v${{ needs.check-merge-and-label.outputs.version }}** has been released!
-
-📦 [View Release](https://github.com/${context.repo.owner}/${context.repo.repo}/releases/tag/v${{ needs.check-merge-and-label.outputs.version }})
-
-The package is now available on conan-stable.`
+              body: `## 🚀 Release Published`
             });
