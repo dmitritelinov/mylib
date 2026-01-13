@@ -57,6 +57,7 @@ jobs:
         if: runner.os == 'Windows'
         run:
           cmake --preset conan-default -DBUILD_TESTING=ON
+
       - name: Configure CMake
         if: runner.os != 'Windows'
         run:
@@ -93,24 +94,15 @@ jobs:
           conan remote add conan-rc ${{ secrets.CONAN_RC_REMOTE }} || true
           conan remote login conan-rc ${{ secrets.CONAN_LOGIN_USERNAME }} -p ${{ secrets.CONAN_PASSWORD }}
       
-      - name: Get version and SHA
-        id: version
-        run: |
-          VERSION=$(grep 'version = ' conanfile.py | cut -d'"' -f2)
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
-          echo "rc_version=$VERSION-dev-$SHORT_SHA" >> $GITHUB_OUTPUT
-      
       - name: Build RC package
         run: |
-          conan create . --version=${{ steps.version.outputs.rc_version }} \
+          conan create . \
             --profile=profiles/linux-gcc \
             --build=missing
       
       - name: Upload RC package
         run: |
-          conan upload "mylib/${{ steps.version.outputs.rc_version }}" \
+          conan upload "mylib/*" \
             --remote=conan-rc --confirm
       
       - name: Create consumer test project
