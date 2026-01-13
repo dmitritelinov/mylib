@@ -50,7 +50,7 @@ jobs:
           conan profile detect --force
           
           # Get detected compiler version
-          COMPILER_VERSION=$(conan profile show | grep "^compiler.version=" | cut -d'=' -f2)
+          COMPILER_VERSION=15
           echo "Detected compiler version: $COMPILER_VERSION"
           
           # Update profile with detected version
