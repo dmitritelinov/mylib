@@ -43,6 +43,34 @@ jobs:
       - name: Install Conan
         run: pip install conan==2.0.17
       
+      - name: Detect and Create Profile
+        shell: bash
+        run: |
+          # Let Conan detect system settings
+          conan profile detect --force
+          
+          # Get detected compiler version
+          COMPILER_VERSION=$(conan profile show default | grep "^compiler.version=" | cut -d'=' -f2)
+          echo "Detected compiler version: $COMPILER_VERSION"
+          
+          # Update profile with detected version
+          if [ -f "profiles/${{ matrix.profile }}" ]; then
+            # Update the version in existing profile
+            if [[ "${{ runner.os }}" == "macOS" ]]; then
+              sed -i '' "s/compiler.version=.*/compiler.version=$COMPILER_VERSION/" profiles/${{ matrix.profile }}
+            else
+              sed -i "s/compiler.version=.*/compiler.version=$COMPILER_VERSION/" profiles/${{ matrix.profile }}
+            fi
+          else
+            echo "Warning: Profile profiles/${{ matrix.profile }} not found, using detected profile"
+            mkdir -p profiles
+            cp ~/.conan2/profiles/default profiles/${{ matrix.profile }}
+          fi
+          
+          # Show final profile
+          echo "Using profile:"
+          conan profile show profiles/${{ matrix.profile }}
+      
       - name: Configure Conan
         run: |
           conan profile detect --force
