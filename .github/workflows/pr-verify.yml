@@ -55,10 +55,20 @@ jobs:
       
       - name: Configure CMake
         run: |
-          cmake --preset conan-release -DBUILD_TESTING=ON
+          if [[ "${{ runner.os }}" == "windows" ]]; then
+            cmake --preset conan-default -DBUILD_TESTING=ON
+          else
+            cmake --preset conan-release -DBUILD_TESTING=ON
+          fi
       
       - name: Build
-        run: cmake --build --preset conan-release
+        run: |
+          if [[ "${{ runner.os }}" == "windows" ]]; then
+            cmake --build --preset conan-default
+          else
+            cmake --build --preset conan-release
+          fi
+        
       
       - name: Run Tests
         uses: dmitritelinov/shared-cicd-actions/run-tests@main
