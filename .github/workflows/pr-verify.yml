@@ -69,7 +69,7 @@ jobs:
           
           # Show final profile
           echo "Using profile:"
-          conan profile show profiles/${{ matrix.profile }}
+          #conan profile show profiles/${{ matrix.profile }}
       
       - name: Configure Conan
         run: |
