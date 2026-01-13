@@ -107,12 +107,12 @@ jobs:
       
       - name: Create consumer test project
         run: |
-          MYLIB=$(ls mylib/*)
+          export MYLIB=$(ls mylib/*)
           mkdir -p consumer_test
           cd consumer_test
           cat > conanfile.txt << EOF
           [requires]
-          mylib/${{ MYLIB }}
+          mylib/${{ env.MYLIB }}
           
           [generators]
           CMakeDeps
