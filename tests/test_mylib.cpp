@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include "mylib/mylib.h"
 
 TEST(MylibTest, SumPositive) {
