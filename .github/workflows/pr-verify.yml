@@ -64,7 +64,7 @@ jobs:
           else
             echo "Warning: Profile profiles/${{ matrix.profile }} not found, using detected profile"
             mkdir -p profiles
-            cp ~/.conan2/profiles/default profiles/${{ matrix.profile }}
+            #cp ~/.conan2/profiles/default profiles/${{ matrix.profile }}
           fi
           
           # Show final profile
