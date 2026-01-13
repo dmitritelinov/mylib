@@ -11,3 +11,4 @@ int multiply(int a, int b) {
 }
 
 } // namespace mylib
+// Test comment
