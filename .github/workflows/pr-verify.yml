@@ -51,7 +51,7 @@ jobs:
       - name: Install dependencies with lockfile
         run: |
           conan lock create . --profile=profiles/${{ matrix.profile }} --lockfile-out=conan.lock
-          conan install . -pr:a=profiles/${{ matrix.profile }} --build=missing --lockfile=conan.lock
+          conan install . --profile=profiles/${{ matrix.profile }} --build=missing --lockfile=conan.lock
       
       - name: Configure CMake Windows
         if: runner.os == 'Windows'
