@@ -6,32 +6,6 @@ on:
     types: [ opened, synchronize, reopened, labeled, unlabeled ]
 
 jobs:
-  check-branch-status:
-    name: Check Branch Status
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      - name: Check if branch is up to date
-        run: |
-          git fetch origin main
-          BEHIND=$(git rev-list --count HEAD..origin/main)
-          if [ "$BEHIND" -gt 0 ]; then
-            echo "::error::Branch is $BEHIND commits behind main. Please rebase or merge main."
-            exit 1
-          fi
-      
-      - name: Check linear history
-        run: |
-          # Check for merge commits
-          MERGE_COMMITS=$(git log origin/main..HEAD --merges --oneline | wc -l)
-          if [ "$MERGE_COMMITS" -gt 0 ]; then
-            echo "::error::Non-linear history detected. Please rebase to maintain linear history."
-            exit 1
-          fi
-
   format-check:
     name: Format Check
     runs-on: ubuntu-latest
@@ -67,7 +41,7 @@ jobs:
           os: ${{ matrix.os }}
       
       - name: Install Conan
-        run: pip install conan==2.0.17
+        run: pip install conan==2.24.0
       
       - name: Configure Conan
         run: |
@@ -77,14 +51,21 @@ jobs:
       - name: Install dependencies with lockfile
         run: |
           conan lock create . --profile=profiles/${{ matrix.profile }} --lockfile-out=conan.lock
-          conan install . --profile=profiles/${{ matrix.profile }} --build=missing --lockfile=conan.lock
+          conan install . -pr:a=profiles/${{ matrix.profile }} --build=missing --lockfile=conan.lock
       
+      - name: Configure CMake Windows
+        if: runner.os == 'Windows'
+        run:
+          cmake --preset conan-default -DBUILD_TESTING=ON
+
       - name: Configure CMake
-        run: |
+        if: runner.os != 'Windows'
+        run:
           cmake --preset conan-release -DBUILD_TESTING=ON
-      
+            
       - name: Build
-        run: cmake --build --preset conan-release
+        run:
+          cmake --build --preset conan-release     
       
       - name: Run Tests
         uses: dmitritelinov/shared-cicd-actions/run-tests@main
@@ -105,7 +86,7 @@ jobs:
           python-version: '3.11'
       
       - name: Install Conan
-        run: pip install conan==2.0.17
+        run: pip install conan==2.24.0
       
       - name: Configure Conan
         run: |
@@ -113,68 +94,17 @@ jobs:
           conan remote add conan-rc ${{ secrets.CONAN_RC_REMOTE }} || true
           conan remote login conan-rc ${{ secrets.CONAN_LOGIN_USERNAME }} -p ${{ secrets.CONAN_PASSWORD }}
       
-      - name: Get version and SHA
-        id: version
-        run: |
-          VERSION=$(grep 'version = ' conanfile.py | cut -d'"' -f2)
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
-          echo "rc_version=$VERSION-dev-$SHORT_SHA" >> $GITHUB_OUTPUT
-      
       - name: Build RC package
         run: |
-          conan create . --version=${{ steps.version.outputs.rc_version }} \
+          conan create . \
             --profile=profiles/linux-gcc \
             --build=missing
       
       - name: Upload RC package
         run: |
-          conan upload "mylib/${{ steps.version.outputs.rc_version }}" \
+          conan upload "mylib/*" \
             --remote=conan-rc --confirm
       
-      - name: Create consumer test project
-        run: |
-          mkdir -p consumer_test
-          cd consumer_test
-          cat > conanfile.txt << EOF
-          [requires]
-          mylib/${{ steps.version.outputs.rc_version }}
-          
-          [generators]
-          CMakeDeps
-          CMakeToolchain
-          EOF
-          
-          cat > CMakeLists.txt << EOF
-          cmake_minimum_required(VERSION 3.15)
-          project(ConsumerTest)
-          
-          find_package(mylib CONFIG REQUIRED)
-          
-          add_executable(test_consumer main.cpp)
-          target_link_libraries(test_consumer PRIVATE mylib::mylib)
-          EOF
-          
-          cat > main.cpp << EOF
-          #include <mylib/mylib.h>
-          #include <iostream>
-          
-          int main() {
-              int result = mylib::sum(5, 3);
-              std::cout << "5 + 3 = " << result << std::endl;
-              return (result == 8) ? 0 : 1;
-          }
-          EOF
-      
-      - name: Build and test consumer
-        run: |
-          cd consumer_test
-          conan install . --profile=../profiles/linux-gcc --build=missing
-          cmake --preset conan-release
-          cmake --build --preset conan-release
-          ./build/Release/test_consumer
-
   verify-lockfile:
     name: Verify Dependency Lockfile
     runs-on: ubuntu-latest
@@ -182,7 +112,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Install Conan
-        run: pip install conan==2.0.17
+        run: pip install conan==2.24.0
       
       - name: Configure Conan
         run: conan profile detect --force

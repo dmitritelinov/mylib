@@ -142,11 +142,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## ✅ Release Candidate Packages Built
-              
-The following RC packages have been published to conan-rc and are ready for release:
-
-- ${packages}
-
-The PR can now be merged to publish these packages to conan-stable.`
+              body: `## ✅ Release Candidate Packages Built`
             });

@@ -3,9 +3,9 @@
 
 namespace mylib {
 
-    int sum(int a, int b);
+int sum(int a, int b);
 int multiply(int a, int b);
 
-} // namespace mylib
+}  // namespace mylib
 
-#endif // MYLIB_H
+#endif  // MYLIB_H
