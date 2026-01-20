@@ -6,6 +6,7 @@ C++ library with CI/CD
 # What's inside
 ## Tiny library
 **src/mylib.cpp** - library implementation (sum, multiply)
+
 **include/mylib.h** - Library header files
 
 ## GoogleTest unit tests
